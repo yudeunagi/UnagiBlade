@@ -1,0 +1,148 @@
+# UnagiBlade – 独楽シミュレーション Unity シーン構成メモ
+#
+# このファイルは Unity エディタでシーンをセットアップする際の参照ガイドです。
+# 実際のシーンファイルは Unity エディタで作成してください。
+
+scene: BattleScene
+
+# ---- ヒエラルキー構成 ----
+hierarchy:
+  - name: GameManager
+    components:
+      - GameManager (Script)
+          topA: TopA (Top コンポーネント)
+          topB: TopB (Top コンポーネント)
+          field: Field (Field コンポーネント)
+          countdownSeconds: 3
+      - UIManager (Script)
+          gameManager: GameManager
+
+  # ---- フィールド ----
+  - name: Field
+    components:
+      - Field (Script)
+      - BoxCollider
+          isTrigger: false
+          size: (10, 1, 10)
+      - MeshRenderer (平面メッシュ)
+    note: |
+      独楽が戦う円形または矩形のフィールド。
+      Field コンポーネントが IsInsideField() で境界チェックに使う Collider をアタッチ。
+
+  # ---- 独楽 A ----
+  - name: TopA
+    position: (-2, 1, 0)
+    components:
+      - Top (Script)
+          upperPart: TopA_Upper
+          middlePart: TopA_Middle
+          groundPart: TopA_Ground
+          initialAngularSpeed: 30
+          stoppedAngularSpeedThreshold: 1
+          contactShape: Sharp          # 先端が尖っている（摩擦少）
+          jointBreakForce: 50
+    children:
+      - name: TopA_Upper
+        localPosition: (0, 0.6, 0)
+        components:
+          - TopPart (Script)
+              partType: Upper
+          - Rigidbody
+              mass: 0.2
+          - MeshRenderer (球形または円盤形メッシュ)
+          - Collider
+
+      - name: TopA_Middle
+        localPosition: (0, 0, 0)
+        components:
+          - TopPart (Script)
+              partType: Middle
+          - Rigidbody
+              mass: 0.3
+          - MeshRenderer
+          - Collider
+
+      - name: TopA_Ground
+        localPosition: (0, -0.6, 0)
+        components:
+          - TopPart (Script)
+              partType: Ground
+          - Rigidbody
+              mass: 0.1
+          - MeshRenderer (先端が尖ったコーン形)
+          - CapsuleCollider または MeshCollider (先端形状を表現)
+          - ImpactDetector (Script)
+              breakImpulseThreshold: 20
+
+  # ---- 独楽 B ----
+  - name: TopB
+    position: (2, 1, 0)
+    components:
+      - Top (Script)
+          upperPart: TopB_Upper
+          middlePart: TopB_Middle
+          groundPart: TopB_Ground
+          initialAngularSpeed: 30
+          stoppedAngularSpeedThreshold: 1
+          contactShape: Flat           # 先端が平らな円盤形（摩擦多）
+          jointBreakForce: 50
+    children:
+      - name: TopB_Upper
+        localPosition: (0, 0.6, 0)
+        components:
+          - TopPart (Script)
+              partType: Upper
+          - Rigidbody
+              mass: 0.2
+          - MeshRenderer
+          - Collider
+
+      - name: TopB_Middle
+        localPosition: (0, 0, 0)
+        components:
+          - TopPart (Script)
+              partType: Middle
+          - Rigidbody
+              mass: 0.3
+          - MeshRenderer
+          - Collider
+
+      - name: TopB_Ground
+        localPosition: (0, -0.6, 0)
+        components:
+          - TopPart (Script)
+              partType: Ground
+          - Rigidbody
+              mass: 0.1
+          - MeshRenderer (先端が平らな円柱形)
+          - CylinderCollider または BoxCollider (平らな底面を表現)
+          - ImpactDetector (Script)
+              breakImpulseThreshold: 20
+
+  # ---- UI ----
+  - name: Canvas
+    children:
+      - name: CountdownText
+        components:
+          - Text
+              text: "3..."
+      - name: ResultPanel
+        active: false
+        children:
+          - name: ResultText
+            components:
+              - Text
+                  text: ""
+
+# ---- 勝敗ロジック ----
+# GameManager が毎フレーム以下の条件を監視する:
+#   1. Top.IsSpinning == false → 回転停止（負け）
+#   2. Field.IsInsideField(top.position) == false → フィールド外（負け）
+#
+# 両方が同時に条件を満たした場合は引き分け。
+
+# ---- ジョイント破壊ロジック ----
+# TopA_Ground / TopB_Ground に ImpactDetector をアタッチ。
+# 衝突時の衝撃が breakImpulseThreshold を超えると、
+# Top の ConfigurableJoint の breakForce を超える力が加わり、ジョイントが外れる。
+# OnJointBreak コールバックで Top.IsBroken フラグが立つ。
