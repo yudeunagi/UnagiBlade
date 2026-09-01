@@ -1,0 +1,72 @@
+# UnagiBlade – 接地形状バリアント (GroundContactShapeVariant) セットアップガイド
+#
+# Unity エディタで以下の手順に従い、各形状バリアントのアセットを作成してください。
+#
+# ---- 作成手順 ----
+# 1. Unity メニュー → Assets → Create → UnagiBlade → Ground Contact Shape Variant
+# 2. 作成されたアセットに Mesh と PhysicsMaterial を設定する
+# 3. 独楽 Prefab の接地部 TopPart コンポーネントの「Ground Contact Variant」スロットに
+#    作成したアセットをアサインする
+
+# ---- 推奨バリアント一覧 ----
+
+variants:
+
+  # ① 先端が尖ったタイプ（コーン形）
+  - assetName: GroundShape_Sharp
+    variantName: Sharp
+    mesh: >
+      Assets/Models/GroundParts/GroundSharp.fbx （先端が鋭角のコーンメッシュ）
+      ※ tip が点に近く、地面との接触面積が極めて小さい
+    physicsMaterial: >
+      Assets/Materials/GroundPhysics_Sharp.physicsMaterial
+      dynamicFriction: 0.1
+      staticFriction:  0.1
+      bounciness:      0.0
+      frictionCombine: Minimum
+    notes: |
+      接触面積が最小のため角速度の減衰が最も少なく、最も長く回転する。
+      コライダーは MeshCollider (convex=true) を使用し、鋭角コーン形状をそのまま再現。
+
+  # ② 先端が丸いタイプ（球面）
+  - assetName: GroundShape_Rounded
+    variantName: Rounded
+    mesh: >
+      Assets/Models/GroundParts/GroundRounded.fbx （下部が半球状のメッシュ）
+      ※ 球面状の tip で接触面積は中程度
+    physicsMaterial: >
+      Assets/Materials/GroundPhysics_Rounded.physicsMaterial
+      dynamicFriction: 0.3
+      staticFriction:  0.3
+      bounciness:      0.0
+      frictionCombine: Average
+    notes: |
+      標準的な挙動。接触面積・摩擦が中程度で、バランスの取れた回転時間。
+
+  # ③ 先端が平らなタイプ（円盤底面）
+  - assetName: GroundShape_Flat
+    variantName: Flat
+    mesh: >
+      Assets/Models/GroundParts/GroundFlat.fbx （底面が平らな円柱メッシュ）
+      ※ 底面全体が地面に接触し、接触面積が最大
+    physicsMaterial: >
+      Assets/Materials/GroundPhysics_Flat.physicsMaterial
+      dynamicFriction: 0.7
+      staticFriction:  0.7
+      bounciness:      0.0
+      frictionCombine: Maximum
+    notes: |
+      接触面積が最大のため摩擦が最も大きく、最も早く回転が止まる。
+      円柱底面を MeshCollider で正確に再現することで
+      接地挙動がエンジンの物理演算に委ねられる。
+
+# ---- 物理マテリアル作成手順 ----
+# Unity メニュー → Assets → Create → Physics Material
+# 上記の dynamicFriction / staticFriction / bounciness / frictionCombine を設定する。
+
+# ---- 3D モデルの制作指針 ----
+# - Y 軸が上方向になるよう向きを揃える
+# - 接地部の底（地面に触れる部分）は原点近くに配置する
+# - MeshCollider の convex=true が必要なため、凸形状にする
+#   （凸でない場合は Unity が自動的に凸包を生成するが精度が落ちる）
+# - ポリゴン数は 256 以下を目安にする（物理演算の負荷軽減）
