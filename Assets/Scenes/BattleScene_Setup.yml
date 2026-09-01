@@ -39,7 +39,7 @@ hierarchy:
           groundPart: TopA_Ground
           initialAngularSpeed: 30
           stoppedAngularSpeedThreshold: 1
-          contactShape: Sharp          # 先端が尖っている（摩擦少）
+          contactShapeVariant: GroundShape_Sharp  # Assets/ScriptableObjects/GroundShape_Sharp.asset
           jointBreakForce: 50
     children:
       - name: TopA_Upper
@@ -67,10 +67,11 @@ hierarchy:
         components:
           - TopPart (Script)
               partType: Ground
+              groundContactVariant: GroundShape_Sharp  # Assets/ScriptableObjects/GroundShape_Sharp.asset
+              # ↑ Awake() 時に MeshFilter・MeshCollider が自動適用される
           - Rigidbody
               mass: 0.1
-          - MeshRenderer (先端が尖ったコーン形)
-          - CapsuleCollider または MeshCollider (先端形状を表現)
+          - MeshRenderer
           - ImpactDetector (Script)
               breakImpulseThreshold: 20
 
@@ -84,7 +85,7 @@ hierarchy:
           groundPart: TopB_Ground
           initialAngularSpeed: 30
           stoppedAngularSpeedThreshold: 1
-          contactShape: Flat           # 先端が平らな円盤形（摩擦多）
+          contactShapeVariant: GroundShape_Flat  # Assets/ScriptableObjects/GroundShape_Flat.asset
           jointBreakForce: 50
     children:
       - name: TopB_Upper
@@ -112,10 +113,11 @@ hierarchy:
         components:
           - TopPart (Script)
               partType: Ground
+              groundContactVariant: GroundShape_Flat  # Assets/ScriptableObjects/GroundShape_Flat.asset
+              # ↑ Awake() 時に MeshFilter・MeshCollider が自動適用される
           - Rigidbody
               mass: 0.1
-          - MeshRenderer (先端が平らな円柱形)
-          - CylinderCollider または BoxCollider (平らな底面を表現)
+          - MeshRenderer
           - ImpactDetector (Script)
               breakImpulseThreshold: 20
 

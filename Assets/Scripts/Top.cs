@@ -22,7 +22,8 @@ public class Top : MonoBehaviour
     [SerializeField] private float stoppedAngularSpeedThreshold = 1f;
 
     [Header("Ground Contact")]
-    [SerializeField] private GroundContactShape contactShape = GroundContactShape.Rounded;
+    [Tooltip("接地部の形状バリアント。TopPart (Ground) に直接設定するため、ここでは参照のみ。")]
+    [SerializeField] private GroundContactShapeVariant contactShapeVariant;
 
     [Header("Joint Break Force")]
     [Tooltip("この力を超えるとジョイントが外れる (N)")]
@@ -36,8 +37,8 @@ public class Top : MonoBehaviour
     /// <summary>この独楽が破壊されているかどうか（少なくとも1ジョイントが外れた）。</summary>
     public bool IsBroken { get; private set; }
 
-    /// <summary>接地形状。</summary>
-    public GroundContactShape ContactShape => contactShape;
+    /// <summary>接地形状バリアント。</summary>
+    public GroundContactShapeVariant ContactShapeVariant => contactShapeVariant;
 
     // ---- 内部フィールド ----
 
@@ -75,7 +76,6 @@ public class Top : MonoBehaviour
         if (initialized) return;
 
         SetupJoints();
-        ApplyGroundContactDrag();
         StartSpin();
 
         IsSpinning = true;
@@ -137,14 +137,6 @@ public class Top : MonoBehaviour
         joint.breakTorque = jointBreakForce;
 
         return joint;
-    }
-
-    private void ApplyGroundContactDrag()
-    {
-        if (groundRigidbody == null) return;
-
-        float multiplier = GroundContactShapeHelper.GetAngularDragMultiplier(contactShape);
-        groundRigidbody.angularDamping = multiplier;
     }
 
     private void StartSpin()
